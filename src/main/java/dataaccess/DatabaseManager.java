@@ -66,12 +66,13 @@ public class DatabaseManager {
     }
 
     private static void loadProperties(Properties props) {
-        databaseName = props.getProperty("db.name");
-        dbUsername = props.getProperty("db.user");
-        dbPassword = props.getProperty("db.password");
+        databaseName = System.getenv("db.name");
+        dbUsername = System.getenv("db.user");
+        dbPassword = System.getenv("db.password");
+        connectionUrl = System.getenv("db.connectionURL");
 
-        var host = props.getProperty("db.host");
-        var port = Integer.parseInt(props.getProperty("db.port"));
-        connectionUrl = String.format("jdbc:mysql://%s:%d", host, port);
+        var host = System.getenv("db.host");
+        var port = Integer.parseInt(System.getenv("db.port"));
+//        connectionUrl = String.format("jdbc:mysql://%s:%d", host, port);
     }
 }
