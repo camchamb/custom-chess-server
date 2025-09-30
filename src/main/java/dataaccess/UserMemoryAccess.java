@@ -24,4 +24,12 @@ public class UserMemoryAccess implements UserDAO{
         }
         return data.get(username);
     }
+
+    @Override
+    public UserData getUserFromEmail(String username) throws DataAccessException {
+        if (!data.containsKey(username)) {
+            return null;
+        }
+        return data.get(username);
+    }
 }
