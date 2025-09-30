@@ -81,8 +81,8 @@ public class Server {
             cookie.setHttpOnly(true);
             cookie.setSecure(true);       // HTTPS only
             context.res().addCookie(cookie);
-            context.json(new LoginResult(regRes.username(), null));
-
+            var username = new LoginResult(regRes.username(), null);
+            context.json(serializer.toJson(username));
             System.out.println(serializer.toJson(regRes));
         }
         catch (DataAccessException ex) {
@@ -111,8 +111,8 @@ public class Server {
             cookie.setHttpOnly(true);
             cookie.setSecure(true);       // HTTPS only
             context.res().addCookie(cookie);
-            context.json(new LoginResult(loginRequest.email(), null));
-//            context.json(serializer.toJson(loginResult));
+            var email = new LoginResult(loginRequest.email(), null);
+            context.json(serializer.toJson(email));
             System.out.println(serializer.toJson(loginResult));
         }
         catch (DataAccessException ex) {
