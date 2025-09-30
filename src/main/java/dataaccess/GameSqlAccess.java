@@ -3,6 +3,7 @@ package dataaccess;
 import chess.ChessGame;
 import com.google.gson.Gson;
 import data.GameData;
+import java.security.SecureRandom;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -15,26 +16,35 @@ public class GameSqlAccess implements GameDAO {
     }
 
     @Override
-    public int createGame(String gameName) throws DataAccessException {
-        var statement = "INSERT INTO game (gameName, game) VALUES(?, ?)";
-        var game = serializer.toJson(new ChessGame(), ChessGame.class);
-        return SqlUtils.executeUpdate(statement, gameName, game);
+    public String createGame() throws DataAccessException {
+        while (true) {
+            String room = GameCodeGenerator();
+            var gameData = getGame(room);
+            if (gameData.roomCode() == null) {
+                var statement = "INSERT INTO game (roomCode, game) VALUES(?, ?)";
+                var game = serializer.toJson(new ChessGame(), ChessGame.class);
+                if (SqlUtils.executeUpdate(statement, room, game) == 0) {
+                    throw new DataAccessException(500, "Faild to create game");
+                }
+                return room;
+            }
+        }
     }
 
     @Override
-    public GameData getGame(int gameID) throws DataAccessException {
+    public GameData getGame(String roomCode) throws DataAccessException {
         try (var conn = DatabaseManager.getConnection()) {
-            var statement = "SELECT whiteUsername, blackUsername, gameName, game FROM game WHERE gameID = ?";
+            var statement = "SELECT whiteUsername, blackUsername, game FROM game WHERE roomCode = ?";
             try (var preparedStatement = conn.prepareStatement(statement)) {
-                preparedStatement.setInt(1, gameID);
+                preparedStatement.setString(1, roomCode);
                 try (var rs = preparedStatement.executeQuery()) {
                     if (rs.next()) {
                         var whiteUsername = rs.getString("whiteUsername");
                         var blackUsername = rs.getString("blackUsername");
-                        var gameName = rs.getString("gameName");
+//                        var gameName = rs.getString("gameName");
                         var game = rs.getString("game");
                         var gameObject = serializer.fromJson(game, ChessGame.class);
-                        return new GameData(gameID, whiteUsername, blackUsername, gameName, gameObject);
+                        return new GameData(roomCode, whiteUsername, blackUsername, gameObject);
                     }
                 }
             }
@@ -48,15 +58,15 @@ public class GameSqlAccess implements GameDAO {
     public Collection<GameData> listGames() throws DataAccessException {
         var allGames = new ArrayList<GameData>();
         try (var conn = DatabaseManager.getConnection()) {
-            var statement = "SELECT gameID, whiteUsername, blackUsername, gameName FROM game";
+            var statement = "SELECT whiteUsername, blackUsername, roomCode FROM game";
             try (var preparedStatement = conn.prepareStatement(statement)) {
                 try (var rs = preparedStatement.executeQuery()) {
                     while (rs.next()) {
-                        var gameID = rs.getInt("gameID");
+//                        var gameID = rs.getInt("gameID");
                         var whiteUsername = rs.getString("whiteUsername");
                         var blackUsername = rs.getString("blackUsername");
-                        var gameName = rs.getString("gameName");
-                        allGames.add(new GameData(gameID, whiteUsername, blackUsername, gameName, null));
+                        var roomCode = rs.getString("roomCode");
+                        allGames.add(new GameData(whiteUsername, blackUsername, roomCode, null));
                     }
                 }
             }
@@ -68,9 +78,9 @@ public class GameSqlAccess implements GameDAO {
 
     @Override
     public void updateGame(GameData u) throws DataAccessException {
-        var statement = "UPDATE game SET whiteUsername = ?, blackUsername = ?, gameName = ?, game = ? WHERE gameID = ?";
+        var statement = "UPDATE game SET whiteUsername = ?, blackUsername = ?, roomCode = ?, game = ? WHERE roomCode = ?";
         var game = serializer.toJson(u.game(), ChessGame.class);
-        SqlUtils.executeUpdate(statement, u.whiteUsername(), u.blackUsername(), u.gameName(), game, u.gameID());
+        SqlUtils.executeUpdate(statement, u.whiteUsername(), u.blackUsername(), u.roomCode(), game, u.roomCode());
     }
 
     @Override
@@ -82,16 +92,29 @@ public class GameSqlAccess implements GameDAO {
     private void configureDatabase() throws DataAccessException {
         var createUserTable = """
             CREATE TABLE  IF NOT EXISTS game (
-                gameID INT NOT NULL AUTO_INCREMENT,
+                roomCode VARCHAR(255) NOT NULL,
                 whiteUsername VARCHAR(255) DEFAULT NULL,
                 blackUsername VARCHAR(255) DEFAULT NULL,
-                gameName VARCHAR(255) DEFAULT NULL,
                 game TEXT DEFAULT NULL,
-                PRIMARY KEY (gameID),
+                PRIMARY KEY (roomCode),
                 FOREIGN KEY (whiteUsername) REFERENCES user(username) ON DELETE CASCADE,
                 FOREIGN KEY (blackUsername) REFERENCES user(username) ON DELETE CASCADE
             )""";
 
             SqlUtils.configureDatabase(createUserTable);
 }
+
+
+    public String GameCodeGenerator() {
+        String CHARACTERS = "ABCDEFGHJKLMNPQRSTUVWXYZ123456789";
+        int CODE_LENGTH = 6;
+        SecureRandom random = new SecureRandom();
+
+        StringBuilder code = new StringBuilder(CODE_LENGTH);
+        for (int i = 0; i < CODE_LENGTH; i++) {
+            code.append(CHARACTERS.charAt(random.nextInt(CHARACTERS.length())));
+        }
+        return code.toString();
+    }
+
 }

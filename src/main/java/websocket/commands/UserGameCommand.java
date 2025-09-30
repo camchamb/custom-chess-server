@@ -16,20 +16,20 @@ public class UserGameCommand {
 
     private final String authToken;
 
-    private final Integer gameID;
+    private final String roomCode;
 
     private ChessMove move = null;
 
-    public UserGameCommand(CommandType commandType, String authToken, Integer gameID) {
+    public UserGameCommand(CommandType commandType, String authToken, String roomCode) {
         this.commandType = commandType;
         this.authToken = authToken;
-        this.gameID = gameID;
+        this.roomCode = roomCode;
     }
 
-    public UserGameCommand(CommandType commandType, String authToken, Integer gameID, ChessMove move) {
+    public UserGameCommand(CommandType commandType, String authToken, String roomCode, ChessMove move) {
         this.commandType = commandType;
         this.authToken = authToken;
-        this.gameID = gameID;
+        this.roomCode = roomCode;
         this.move = move;
     }
 
@@ -48,8 +48,8 @@ public class UserGameCommand {
         return authToken;
     }
 
-    public Integer getGameID() {
-        return gameID;
+    public String getRoomCode() {
+        return roomCode;
     }
 
     public ChessMove getMove() {
@@ -66,11 +66,11 @@ public class UserGameCommand {
         }
         return getCommandType() == that.getCommandType() &&
                 Objects.equals(getAuthToken(), that.getAuthToken()) &&
-                Objects.equals(getGameID(), that.getGameID());
+                Objects.equals(getRoomCode(), that.getRoomCode());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getCommandType(), getAuthToken(), getGameID());
+        return Objects.hash(getCommandType(), getAuthToken(), getRoomCode());
     }
 }

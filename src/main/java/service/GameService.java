@@ -34,15 +34,13 @@ public class GameService {
         if (createGameRequest.authToken() == null) {
             throw new DataAccessException(400, "Error: invalid request");
         }
-        if (createGameRequest.gameName() == null) {
-            throw new DataAccessException(400, "Error: invalid request");
-        }
         var authData = authAccess.getAuth(createGameRequest.authToken());
         if (authData == null) {
             throw new DataAccessException(401, "Error: unauthorized");
         }
-        var gameID = gameAccess.createGame(createGameRequest.gameName());
-        return new CreateGameResult(gameID);
+
+        var roomCode = gameAccess.createGame();
+        return new CreateGameResult(roomCode);
     }
 
     public void joinGame(JoinGameRequest joinGameRequest) throws DataAccessException{
@@ -60,18 +58,18 @@ public class GameService {
             throw new DataAccessException(401, "Error: unauthorized");
         }
         String username = authData.username();
-        GameData gameData = gameAccess.getGame(joinGameRequest.gameID());
+        GameData gameData = gameAccess.getGame(joinGameRequest.roomCode());
         if (gameData == null) {
             throw new DataAccessException(400, "Error: no such gameID");
         }
         GameData updatedGameData;
         if (joinGameRequest.playerColor().equals("WHITE") && gameData.whiteUsername() == null) {
-            updatedGameData = new GameData(gameData.gameID(), username,
-                    gameData.blackUsername(), gameData.gameName(), gameData.game());
+            updatedGameData = new GameData(username,
+                    gameData.blackUsername(), gameData.roomCode(), gameData.game());
         }
         else if (joinGameRequest.playerColor().equals("BLACK") && gameData.blackUsername() == null) {
-            updatedGameData = new GameData(gameData.gameID(), gameData.whiteUsername(),
-                    username, gameData.gameName(), gameData.game());
+            updatedGameData = new GameData(gameData.whiteUsername(),
+                    username, gameData.roomCode(), gameData.game());
         }
         else {
             throw new DataAccessException(403, "Error: color taken");

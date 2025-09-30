@@ -6,12 +6,12 @@ import java.io.IOException;
 
 public class Connection {
     public String authToken;
-    public int gameID;
+    public String roomCode;
     public Session session;
 
-    public Connection(String authToken, int gameID, Session session) {
+    public Connection(String authToken, String RoomCode, Session session) {
         this.authToken = authToken;
-        this.gameID = gameID;
+        this.roomCode = RoomCode;
         this.session = session;
     }
 

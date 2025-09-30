@@ -44,10 +44,10 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         try {
             UserGameCommand action = new Gson().fromJson(ctx.message(), UserGameCommand.class);
             switch (action.getCommandType()) {
-                case CONNECT -> connect(action.getAuthToken(), action.getGameID(), ctx.session);
+                case CONNECT -> connect(action.getAuthToken(), action.getRoomCode(), ctx.session);
                 case MAKE_MOVE -> makeMove(new Gson().fromJson(ctx.message(), UserGameCommand.class), ctx.session);
-                case LEAVE -> leave(action.getAuthToken(), action.getGameID(), ctx.session);
-                case RESIGN -> resign(action.getAuthToken(), action.getGameID(), ctx.session);
+                case LEAVE -> leave(action.getAuthToken(), action.getRoomCode(), ctx.session);
+                case RESIGN -> resign(action.getAuthToken(), action.getRoomCode(), ctx.session);
                 default -> connections.messageRoot(ctx.session,
                         new ServerMessage(ServerMessage.ServerMessageType.ERROR, "Invalid Command"));
             }
@@ -61,8 +61,8 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         System.out.println("Websocket closed");
     }
 
-    private void connect(String authToken, int gameID, Session session) throws IOException {
-        connections.add(authToken, gameID, session);
+    private void connect(String authToken, String roomCode, Session session) throws IOException {
+        connections.add(authToken, roomCode, session);
         String message;
         GameData gameData;
         try {
@@ -72,7 +72,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
                 connections.messageRoot(session, error);
                 return;
             }
-            gameData = gameAccess.getGame(gameID);
+            gameData = gameAccess.getGame(roomCode);
             if (gameData == null) {
                 var error = new ServerMessage(ServerMessage.ServerMessageType.ERROR, "No Such Game");
                 connections.messageRoot(session, error);
@@ -93,10 +93,10 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         var loadGame = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME, gameData.game());
         connections.messageRoot(session, loadGame);
         var notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, message);
-        connections.broadcast(authToken, gameID, notification);
+        connections.broadcast(authToken, roomCode, notification);
     }
 
-    private void leave(String authToken, int gameID, Session session) throws IOException {
+    private void leave(String authToken, String roomCode, Session session) throws IOException {
         connections.remove(authToken);
         String message;
         GameData gameData;
@@ -104,17 +104,17 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         try {
             authData = authAccess.getAuth(authToken);
             message = String.format("%s left the game", authData.username());
-            gameData = gameAccess.getGame(gameID);
+            gameData = gameAccess.getGame(roomCode);
             if (gameData == null) {
                 var error = new ServerMessage(ServerMessage.ServerMessageType.ERROR, "No Such Game");
                 connections.messageRoot(session, error);
                 return;
             }
             if (gameData.whiteUsername() != null && gameData.whiteUsername().equals(authData.username())) {
-                gameAccess.updateGame(new GameData(gameID, null, gameData.blackUsername(), gameData.gameName(), gameData.game()));
+                gameAccess.updateGame(new GameData(null, gameData.blackUsername(), gameData.roomCode(), gameData.game()));
             }
             if (gameData.blackUsername() != null &&gameData.blackUsername().equals(authData.username())) {
-                gameAccess.updateGame(new GameData(gameID, gameData.whiteUsername(), null, gameData.gameName(), gameData.game()));
+                gameAccess.updateGame(new GameData(gameData.whiteUsername(), null, gameData.roomCode(), gameData.game()));
             }
         } catch (DataAccessException e) {
             var error = new ServerMessage(ServerMessage.ServerMessageType.ERROR, "Bad Request");
@@ -122,7 +122,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
             return;
         }
         var notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, message);
-        connections.broadcast(authToken, gameID, notification);
+        connections.broadcast(authToken, roomCode, notification);
     }
 
     private void makeMove(UserGameCommand moveCommand, Session session) throws IOException {
@@ -139,7 +139,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
                 connections.messageRoot(session, error);
                 return;
             }
-            gameData = gameAccess.getGame(moveCommand.getGameID());
+            gameData = gameAccess.getGame(moveCommand.getRoomCode());
             if (gameData == null) {
                 var error = new ServerMessage(ServerMessage.ServerMessageType.ERROR, "No Such Game");
                 connections.messageRoot(session, error);
@@ -173,12 +173,12 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
             message = String.format("%s moved %s to %s", username, move.getStartPosition(), move.getEndPosition());
             var loadGame = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME, gameData.game());
             connections.messageRoot(session, loadGame);
-            connections.broadcast(moveCommand.getAuthToken(), moveCommand.getGameID(), loadGame);
+            connections.broadcast(moveCommand.getAuthToken(), moveCommand.getRoomCode(), loadGame);
             String checkMessage = checkMessages(game, gameData);
             if (checkMessage != null) {
                 ServerMessage notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, checkMessage);
                 connections.messageRoot(session, notification);
-                connections.broadcast(moveCommand.getAuthToken(), moveCommand.getGameID(), notification);
+                connections.broadcast(moveCommand.getAuthToken(), moveCommand.getRoomCode(), notification);
             }
         } catch (DataAccessException e) {
             var error = new ServerMessage(ServerMessage.ServerMessageType.ERROR, "Invalid Move");
@@ -190,7 +190,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
             return;
         }
         var notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, message);
-        connections.broadcast(moveCommand.getAuthToken(), moveCommand.getGameID(), notification);
+        connections.broadcast(moveCommand.getAuthToken(), moveCommand.getRoomCode(), notification);
     }
 
     private String checkMessages(ChessGame game, GameData gameData) {
@@ -216,14 +216,14 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     }
 
 
-    private void resign(String authToken, int gameID, Session session) throws IOException {
+    private void resign(String authToken, String RoomCode, Session session) throws IOException {
         String message;
         GameData gameData;
         AuthData authData;
         try {
             authData = authAccess.getAuth(authToken);
             message = String.format("%s resigned the game", authData.username());
-            gameData = gameAccess.getGame(gameID);
+            gameData = gameAccess.getGame(RoomCode);
             if (gameData == null) {
                 var error = new ServerMessage(ServerMessage.ServerMessageType.ERROR, "No Such Game");
                 connections.messageRoot(session, error);
@@ -250,7 +250,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
             return;
         }
         var notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, message);
-        connections.broadcast(authToken, gameID, notification);
+        connections.broadcast(authToken, RoomCode, notification);
         connections.messageRoot(session, notification);
     }
 }

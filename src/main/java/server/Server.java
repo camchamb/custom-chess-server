@@ -146,8 +146,7 @@ public class Server {
 
     private void createGame(Context context) {
         try {
-            var tempRequest = serializer.fromJson(context.body(), CreateGameRequest.class);
-            var createGameRequest = new CreateGameRequest(tempRequest.gameName(), context.cookie("authToken"));
+            var createGameRequest = new CreateGameRequest(context.cookie("authToken"));
             CreateGameResult createGameResult = gameService.createGame(createGameRequest);
             context.json(serializer.toJson(createGameResult));
             System.out.println(serializer.toJson(createGameResult));
@@ -161,7 +160,7 @@ public class Server {
         try {
             var tempRequest = serializer.fromJson(context.body(), JoinGameRequest.class);
             var joinGameRequest = new JoinGameRequest(tempRequest.playerColor(),
-                    tempRequest.gameID(), context.cookie("authToken"));
+                    tempRequest.roomCode(), context.cookie("authToken"));
             gameService.joinGame(joinGameRequest);
             context.json("{ }");
         }

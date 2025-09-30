@@ -71,8 +71,13 @@ public class DatabaseManager {
         dbPassword = System.getenv("db.password");
         connectionUrl = System.getenv("db.connectionURL");
 
-        var host = System.getenv("db.host");
-        var port = Integer.parseInt(System.getenv("db.port"));
+//        databaseName = props.getProperty("db.name");
+//        dbUsername = props.getProperty("db.user");
+//        dbPassword = props.getProperty("db.password");
+//        connectionUrl = props.getProperty("db.connectionURL");
+
+//        var host = System.getenv("db.host");
+//        var port = Integer.parseInt(System.getenv("db.port"));
 //        connectionUrl = String.format("jdbc:mysql://%s:%d", host, port);
     }
 }
