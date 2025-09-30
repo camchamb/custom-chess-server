@@ -44,6 +44,27 @@ public class UserSqlAccess implements UserDAO{
         return null;
     }
 
+    @Override
+    public UserData getUserFromEmail(String email) throws DataAccessException {
+        try (var conn = DatabaseManager.getConnection()) {
+            try (var preparedStatement = conn.prepareStatement("SELECT username, password, email FROM user WHERE email=?")) {
+                preparedStatement.setString(1, email);
+                try (var rs = preparedStatement.executeQuery()) {
+                    if (rs.next()) {
+                        var password = rs.getString("password");
+                        var username = rs.getString("username");
+
+                        return new UserData(username, password, email);
+                    }
+
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return null;
+    }
+
     private void configureDatabase() throws DataAccessException {
             var createUserTable = """
             CREATE TABLE  IF NOT EXISTS user (

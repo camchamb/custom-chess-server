@@ -9,4 +9,6 @@ public interface UserDAO {
 
     UserData getUser(String username) throws DataAccessException;
 
+    UserData getUserFromEmail(String email) throws DataAccessException;
+
 }

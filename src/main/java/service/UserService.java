@@ -41,20 +41,20 @@ public class UserService {
     }
 
     public LoginResult login(LoginRequest loginRequest) throws DataAccessException {
-        if (loginRequest.password() == null || loginRequest.username() == null) {
+        if (loginRequest.password() == null || loginRequest.email() == null) {
             throw new DataAccessException(400, "Error: invalid request");
         }
-        UserData userData = userAccess.getUser(loginRequest.username());
+        UserData userData = userAccess.getUserFromEmail(loginRequest.email());
         if (userData == null) {
-            throw new DataAccessException(401, "Error: invalid username");
+            throw new DataAccessException(401, "Error: invalid email");
         }
         if (!BCrypt.checkpw(loginRequest.password(), userData.password())) {
             throw new DataAccessException(401, "Error: unauthorized");
         }
         String authToken = generateToken();
-        var authdata = new AuthData(authToken, loginRequest.username());
+        var authdata = new AuthData(authToken, userData.username());
         authAccess.createAuth(authdata);
-        return new LoginResult(loginRequest.username(), authToken);
+        return new LoginResult(loginRequest.email(), authToken);
     }
 
     public void logout(LogoutRequest logoutRequest) throws DataAccessException{

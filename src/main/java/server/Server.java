@@ -4,6 +4,7 @@ import dataaccess.*;
 import io.javalin.*;
 import com.google.gson.Gson;
 import io.javalin.http.Context;
+import jakarta.servlet.http.Cookie;
 
 import requests.*;
 import server.websocket.WebSocketHandler;
@@ -73,13 +74,19 @@ public class Server {
         try {
             var regReq = serializer.fromJson(context.body(), RegisterRequest.class);
             RegisterResult regRes = userService.register(regReq);
-            context.json(serializer.toJson(regRes));
+
+            Cookie cookie = new Cookie("authToken", regRes.authToken());
+            cookie.setMaxAge(3600);       // 1 hour
+            cookie.setPath("/");
+            cookie.setHttpOnly(true);
+            cookie.setSecure(true);       // HTTPS only
+            context.res().addCookie(cookie);
+            context.json(new LoginResult(regRes.username(), null));
+
             System.out.println(serializer.toJson(regRes));
-//            return response.body();
         }
         catch (DataAccessException ex) {
             errorHandling(ex, context);
-//            return response.body();
         }
     }
 
@@ -97,7 +104,15 @@ public class Server {
         try {
             var loginRequest = serializer.fromJson(context.body(), LoginRequest.class);
             LoginResult loginResult = userService.login(loginRequest);
-            context.json(serializer.toJson(loginResult));
+
+            Cookie cookie = new Cookie("authToken", loginResult.authToken());
+            cookie.setMaxAge(3600);       // 1 hour
+            cookie.setPath("/");
+            cookie.setHttpOnly(true);
+            cookie.setSecure(true);       // HTTPS only
+            context.res().addCookie(cookie);
+            context.json(new LoginResult(loginRequest.email(), null));
+//            context.json(serializer.toJson(loginResult));
             System.out.println(serializer.toJson(loginResult));
         }
         catch (DataAccessException ex) {
@@ -107,7 +122,7 @@ public class Server {
 
     private void logout(Context context) {
         try {
-            String authToken = context.header("authorization");
+            String authToken = context.cookie("authToken");
             userService.logout(new LogoutRequest(authToken));
             context.json("{ }");
         }
@@ -118,7 +133,7 @@ public class Server {
 
     private void listGames(Context context) {
         try {
-            String authToken = context.header("authorization");
+            String authToken = context.cookie("authToken");
             var listGamesRequest = new ListGamesRequest(authToken);
             ListGamesResult listGamesResult = gameService.listGames(listGamesRequest);
             context.json(serializer.toJson(listGamesResult));
@@ -132,7 +147,7 @@ public class Server {
     private void createGame(Context context) {
         try {
             var tempRequest = serializer.fromJson(context.body(), CreateGameRequest.class);
-            var createGameRequest = new CreateGameRequest(tempRequest.gameName(), context.header("authorization"));
+            var createGameRequest = new CreateGameRequest(tempRequest.gameName(), context.cookie("authToken"));
             CreateGameResult createGameResult = gameService.createGame(createGameRequest);
             context.json(serializer.toJson(createGameResult));
             System.out.println(serializer.toJson(createGameResult));
@@ -146,7 +161,7 @@ public class Server {
         try {
             var tempRequest = serializer.fromJson(context.body(), JoinGameRequest.class);
             var joinGameRequest = new JoinGameRequest(tempRequest.playerColor(),
-                    tempRequest.gameID(), context.header("authorization"));
+                    tempRequest.gameID(), context.cookie("authToken"));
             gameService.joinGame(joinGameRequest);
             context.json("{ }");
         }
