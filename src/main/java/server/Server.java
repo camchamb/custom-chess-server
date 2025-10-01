@@ -44,6 +44,7 @@ public class Server {
 
         javalin = Javalin.create(config -> config.staticFiles.add("web"));
 
+        javalin.start(getPort());
         // Register your endpoints and exception handlers here.
         javalin.post("/user", this::register)
                 .delete("/db", this::db)
@@ -73,14 +74,15 @@ public class Server {
     private void register(Context context) {
         try {
             var regReq = serializer.fromJson(context.body(), RegisterRequest.class);
+            System.out.println("Request: " + context.body());
             RegisterResult regRes = userService.register(regReq);
 
-            Cookie cookie = new Cookie("authToken", regRes.authToken());
-            cookie.setMaxAge(3600);       // 1 hour
-            cookie.setPath("/");
-            cookie.setHttpOnly(true);
-            cookie.setSecure(true);       // HTTPS only
-            context.res().addCookie(cookie);
+            Cookie myCookie = new Cookie("authToken", regRes.authToken());
+            myCookie.setMaxAge(3600);       // 1 hour
+            myCookie.setPath("/");
+            myCookie.setHttpOnly(true);
+            myCookie.setSecure(true);       // HTTPS only
+            context.cookie("authToken", regRes.authToken(), 3600);
             var username = new LoginResult(regRes.username(), null);
             context.json(serializer.toJson(username));
             System.out.println(serializer.toJson(regRes));
@@ -103,17 +105,17 @@ public class Server {
     private void login(Context context) {
         try {
             var loginRequest = serializer.fromJson(context.body(), LoginRequest.class);
+            System.out.println("Request: " + context.body());
             LoginResult loginResult = userService.login(loginRequest);
-
             Cookie cookie = new Cookie("authToken", loginResult.authToken());
             cookie.setMaxAge(3600);       // 1 hour
             cookie.setPath("/");
             cookie.setHttpOnly(true);
-            cookie.setSecure(true);       // HTTPS only
-            context.res().addCookie(cookie);
+            cookie.setSecure(false);       // HTTPS only
+            context.cookie("authToken", loginResult.authToken(), 3600);
             var email = new LoginResult(loginRequest.email(), null);
             context.json(serializer.toJson(email));
-            System.out.println(serializer.toJson(loginResult));
+            System.out.println(serializer.toJson(serializer.toJson(email)));
         }
         catch (DataAccessException ex) {
             errorHandling(ex, context);
@@ -133,6 +135,7 @@ public class Server {
 
     private void listGames(Context context) {
         try {
+            System.out.println("Request: " + context.body());
             String authToken = context.cookie("authToken");
             var listGamesRequest = new ListGamesRequest(authToken);
             ListGamesResult listGamesResult = gameService.listGames(listGamesRequest);
@@ -146,6 +149,7 @@ public class Server {
 
     private void createGame(Context context) {
         try {
+            System.out.println("Cookie Received: " + context.cookie("authToken"));
             var createGameRequest = new CreateGameRequest(context.cookie("authToken"));
             CreateGameResult createGameResult = gameService.createGame(createGameRequest);
             context.json(serializer.toJson(createGameResult));
@@ -182,5 +186,11 @@ public class Server {
         String json = "{\"message\": \"" + message + "\" }";
         System.out.println(json);
         context.json(json);
+    }
+
+
+    private static int getPort() {
+        String port = System.getenv("PORT");
+        return port != null ? Integer.parseInt(port) : 8080;
     }
 }
