@@ -24,6 +24,7 @@ public class Server {
     GameService gameService;
     Gson serializer = new Gson();
     WebSocketHandler webSocketHandler;
+    String serverUrl = "https://custom-chess-server.onrender.com";
 
     public Server() {
         try {
@@ -116,13 +117,18 @@ public class Server {
 //            context.cookie("authToken", loginResult.authToken(), 3600);
 
             String cookie = String.format(
-                    "authToken=%s; Path=/; Max-Age=%d; HttpOnly; Secure; SameSite=None",
+                    "Domain=%s; authToken=%s; Path=/; Max-Age=%d; HttpOnly; Secure; SameSite=None",
+                    serverUrl,
                     loginResult.authToken(),
                     3600
             );
 
-            // Add header (use addHeader so you can set multiple cookies if needed)
             context.res().addHeader("Set-Cookie", cookie);
+
+            context.res().addHeader(
+                    "Set-Cookie",
+                    "authToken=" + loginResult.authToken() + "; Path=/; HttpOnly; Secure; SameSite=None; Max-Age=3600"
+            );
 
             var email = new LoginResult(loginRequest.email(), null);
             context.json(serializer.toJson(email));
