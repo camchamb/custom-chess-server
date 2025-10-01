@@ -107,12 +107,23 @@ public class Server {
             var loginRequest = serializer.fromJson(context.body(), LoginRequest.class);
             System.out.println("Request: " + context.body());
             LoginResult loginResult = userService.login(loginRequest);
-            Cookie cookie = new Cookie("authToken", loginResult.authToken());
-            cookie.setMaxAge(3600);       // 1 hour
-            cookie.setPath("/");
-            cookie.setHttpOnly(true);
-            cookie.setSecure(false);       // HTTPS only
-            context.cookie("authToken", loginResult.authToken(), 3600);
+//            Cookie cookie = new Cookie("authToken", loginResult.authToken());
+//            cookie.setMaxAge(3600);       // 1 hour
+//            cookie.setPath("/");
+//            cookie.setHttpOnly(true);
+//            cookie.
+//            cookie.setSecure(false);       // HTTPS only
+//            context.cookie("authToken", loginResult.authToken(), 3600);
+
+            String cookie = String.format(
+                    "authToken=%s; Path=/; Max-Age=%d; HttpOnly; Secure; SameSite=None",
+                    loginResult.authToken(),
+                    3600
+            );
+
+            // Add header (use addHeader so you can set multiple cookies if needed)
+            context.res().addHeader("Set-Cookie", cookie);
+
             var email = new LoginResult(loginRequest.email(), null);
             context.json(serializer.toJson(email));
             System.out.println(serializer.toJson(serializer.toJson(email)));
