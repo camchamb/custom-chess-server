@@ -116,19 +116,21 @@ public class Server {
 //            cookie.setSecure(false);       // HTTPS only
 //            context.cookie("authToken", loginResult.authToken(), 3600);
 
-            String cookie = String.format(
-                    "Domain=%s; authToken=%s; Path=/; Max-Age=%d; HttpOnly; Secure; SameSite=None",
-                    serverUrl,
-                    loginResult.authToken(),
-                    3600
-            );
-
-            context.res().addHeader("Set-Cookie", cookie);
+//            String cookie = String.format(
+//                    "Domain=%s; authToken=%s; Path=/; Max-Age=%d; HttpOnly; Secure; SameSite=None",
+//                    serverUrl,
+//                    loginResult.authToken(),
+//                    3600
+//            );
+//
+//            context.res().addHeader("Set-Cookie", cookie);
 
 //            context.res().addHeader(
 //                    "Set-Cookie",
 //                    "authToken=" + loginResult.authToken() + "; Path=/; HttpOnly; Secure; SameSite=None; Max-Age=3600"
 //            );
+
+            context.cookieStore().set("authToken", loginResult.authToken());
 
             var email = new LoginResult(loginRequest.email(), null);
             context.json(serializer.toJson(email));
@@ -166,7 +168,9 @@ public class Server {
 
     private void createGame(Context context) {
         try {
-            System.out.println("Cookie Received: " + context.cookie("authToken"));
+            System.out.println("Cookie Received: " + context.cookieStore().get("authToken"));
+//            System.out.println(context.cookieMap());
+//            System.out.println(context.cookieStore());
             var createGameRequest = new CreateGameRequest(context.cookie("authToken"));
             CreateGameResult createGameResult = gameService.createGame(createGameRequest);
             context.json(serializer.toJson(createGameResult));
