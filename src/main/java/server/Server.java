@@ -169,6 +169,7 @@ public class Server {
     private void createGame(Context context) {
         try {
             var createGameRequest = new CreateGameRequest(context.header("authorization"));
+            System.out.println(serializer.toJson(createGameRequest));
             CreateGameResult createGameResult = gameService.createGame(createGameRequest);
             context.json(serializer.toJson(createGameResult));
             System.out.println(serializer.toJson(createGameResult));
@@ -208,7 +209,12 @@ public class Server {
 
 
     private static int getPort() {
-        String port = System.getenv("PORT");
+        String port;
+        try {
+            port = System.getenv("PORT");
+        } catch (Exception e) {
+            port = null;
+        }
         return port != null ? Integer.parseInt(port) : 8080;
     }
 }
