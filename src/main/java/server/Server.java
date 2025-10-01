@@ -130,11 +130,11 @@ public class Server {
 //                    "authToken=" + loginResult.authToken() + "; Path=/; HttpOnly; Secure; SameSite=None; Max-Age=3600"
 //            );
 
-            context.cookieStore().set("authToken", loginResult.authToken());
+//            context.cookieStore().set("authToken", loginResult.authToken());
 
-            var email = new LoginResult(loginRequest.email(), null);
-            context.json(serializer.toJson(email));
-            System.out.println(serializer.toJson(serializer.toJson(email)));
+//            var email = new LoginResult(loginRequest.email(), null);
+            context.json(serializer.toJson(loginResult));
+            System.out.println(serializer.toJson(serializer.toJson(loginResult)));
         }
         catch (DataAccessException ex) {
             errorHandling(ex, context);
@@ -168,10 +168,7 @@ public class Server {
 
     private void createGame(Context context) {
         try {
-            System.out.println("Cookie Received: " + context.cookieStore().get("authToken"));
-//            System.out.println(context.cookieMap());
-//            System.out.println(context.cookieStore());
-            var createGameRequest = new CreateGameRequest(context.cookie("authToken"));
+            var createGameRequest = new CreateGameRequest(context.header("authorization"));
             CreateGameResult createGameResult = gameService.createGame(createGameRequest);
             context.json(serializer.toJson(createGameResult));
             System.out.println(serializer.toJson(createGameResult));
