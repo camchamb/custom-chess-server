@@ -125,10 +125,10 @@ public class Server {
 
             context.res().addHeader("Set-Cookie", cookie);
 
-            context.res().addHeader(
-                    "Set-Cookie",
-                    "authToken=" + loginResult.authToken() + "; Path=/; HttpOnly; Secure; SameSite=None; Max-Age=3600"
-            );
+//            context.res().addHeader(
+//                    "Set-Cookie",
+//                    "authToken=" + loginResult.authToken() + "; Path=/; HttpOnly; Secure; SameSite=None; Max-Age=3600"
+//            );
 
             var email = new LoginResult(loginRequest.email(), null);
             context.json(serializer.toJson(email));
