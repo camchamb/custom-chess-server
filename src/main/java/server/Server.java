@@ -168,7 +168,7 @@ public class Server {
 
     private void createGame(Context context) {
         try {
-            var createGameRequest = new CreateGameRequest(context.header("authorization"));
+            var createGameRequest = new CreateGameRequest(context.header("authToken"));
             System.out.println(serializer.toJson(createGameRequest));
             CreateGameResult createGameResult = gameService.createGame(createGameRequest);
             context.json(serializer.toJson(createGameResult));
