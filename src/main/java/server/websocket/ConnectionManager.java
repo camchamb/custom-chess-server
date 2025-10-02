@@ -28,6 +28,7 @@ public class ConnectionManager {
                 if (!c.authToken.equals(excludeAuthToken)) {
                     if (c.roomCode.equals(roomCode)) {
                         c.send(serializer.toJson(notification));
+                        System.out.println("Broadcasted: " + serializer.toJson(notification));
                     }
                 }
             } else {
@@ -43,5 +44,6 @@ public class ConnectionManager {
 
     public void messageRoot(Session session, ServerMessage msg) throws IOException {
         session.getRemote().sendString(serializer.toJson(msg));
+        System.out.println("Sent to Root: " + serializer.toJson(msg));
     }
 }
