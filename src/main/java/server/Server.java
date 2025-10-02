@@ -44,8 +44,6 @@ public class Server {
         this.gameService = new GameService(gameAccess, authAccess);
 
         javalin = Javalin.create(config -> config.staticFiles.add("web"));
-
-        javalin.start(getPort());
         // Register your endpoints and exception handlers here.
         javalin.post("/user", this::register)
                 .delete("/db", this::db)
@@ -64,7 +62,7 @@ public class Server {
     }
 
     public int run(int desiredPort) {
-        javalin.start(desiredPort);
+        javalin.start(getPort());;
         return javalin.port();
     }
 

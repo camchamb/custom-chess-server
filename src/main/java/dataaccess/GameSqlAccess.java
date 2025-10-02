@@ -20,12 +20,10 @@ public class GameSqlAccess implements GameDAO {
         while (true) {
             String room = GameCodeGenerator();
             var gameData = getGame(room);
-            if (gameData.roomCode() == null) {
+            if (gameData == null) {
                 var statement = "INSERT INTO game (roomCode, game) VALUES(?, ?)";
                 var game = serializer.toJson(new ChessGame(), ChessGame.class);
-                if (SqlUtils.executeUpdate(statement, room, game) == 0) {
-                    throw new DataAccessException(500, "Faild to create game");
-                }
+                SqlUtils.executeUpdate(statement, room, game);
                 return room;
             }
         }
@@ -66,7 +64,7 @@ public class GameSqlAccess implements GameDAO {
                         var whiteUsername = rs.getString("whiteUsername");
                         var blackUsername = rs.getString("blackUsername");
                         var roomCode = rs.getString("roomCode");
-                        allGames.add(new GameData(whiteUsername, blackUsername, roomCode, null));
+                        allGames.add(new GameData(roomCode, whiteUsername, blackUsername, null));
                     }
                 }
             }
