@@ -468,4 +468,52 @@ public class ChessGame {
     }
 
 
+
+
+    public String toFen() {
+        StringBuilder finalString = new StringBuilder();
+        for (var array : this.board.getBoard()) {
+            int i = 0;
+            for (ChessPiece piece : array) {
+                if (piece == null) {
+                    i += 1;
+                } else {
+                    if (i != 0) {
+                        finalString.append(String.valueOf(i));
+                    }
+                    finalString.append(piece.toFen());
+                    i = 0;
+                }
+            }
+            if (i != 0) {
+                finalString.append(String.valueOf(i));
+            }
+            finalString.append("/");
+        }
+        finalString.deleteCharAt(finalString.length() - 1);
+
+        switch (currentPlayer) {
+            case WHITE -> finalString.append(" w ");
+            case BLACK -> finalString.append(" b ");
+        }
+
+        if (whiteCanCastleRight) {
+            finalString.append("K");
+        }
+        if (whiteCanCastleLeft) {
+            finalString.append("Q");
+        }
+        if (blackCanCastleRight) {
+            finalString.append("k");
+        }
+        if (blackCanCastleLeft) {
+            finalString.append("q");
+        }
+
+        finalString.append(" - 0 1");
+
+    return finalString.toString();
+    }
+
+
 }

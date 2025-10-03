@@ -1,6 +1,8 @@
 package server.websocket;
 
+import com.fasterxml.jackson.databind.DatabindException;
 import com.google.gson.Gson;
+import dataaccess.DataAccessException;
 import org.eclipse.jetty.websocket.api.Session;
 import websocket.messages.ServerMessage;
 
@@ -12,8 +14,11 @@ public class ConnectionManager {
     public final ConcurrentHashMap<String, Connection> connections = new ConcurrentHashMap<>();
     private final Gson serializer = new Gson();
 
-    public void add(String authToken, String RoomCode, Session session) {
-        var connection = new Connection(authToken, RoomCode, session);
+    public void add(String authToken, String roomCode, Session session) throws DataAccessException {
+        if (authToken == null || roomCode == null || session == null) {
+            throw new DataAccessException(500, "No roomCode");
+        }
+        var connection = new Connection(authToken, roomCode, session);
         connections.put(authToken, connection);
     }
 
@@ -43,6 +48,9 @@ public class ConnectionManager {
     }
 
     public void messageRoot(Session session, ServerMessage msg) throws IOException {
+        if (session == null) {
+            throw new RuntimeException("Root ws session closed");
+        }
         session.getRemote().sendString(serializer.toJson(msg));
         System.out.println("Sent to Root: " + serializer.toJson(msg));
     }

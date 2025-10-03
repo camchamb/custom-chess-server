@@ -40,7 +40,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     }
 
     @Override
-    public void handleMessage(WsMessageContext ctx) {
+    public void handleMessage(WsMessageContext ctx) throws DataAccessException {
         try {
             UserGameCommand action = new Gson().fromJson(ctx.message(), UserGameCommand.class);
             System.out.println("WS recieved: " + ctx.message());
@@ -62,8 +62,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         System.out.println("Websocket closed");
     }
 
-    private void connect(String authToken, String roomCode, Session session) throws IOException {
-        connections.add(authToken, roomCode, session);
+    public void connect(String authToken, String roomCode, Session session) throws IOException {
         String message;
         GameData gameData;
         try {
@@ -79,6 +78,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
                 connections.messageRoot(session, error);
                 return;
             }
+            connections.add(authToken, roomCode, session);
             if (authData.username().equals(gameData.whiteUsername())) {
                 message = String.format("%s connected as White Player", authData.username());
             } else if (authData.username().equals(gameData.blackUsername())) {
@@ -91,7 +91,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
             connections.messageRoot(session, error);
             return;
         }
-        var loadGame = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME, gameData.game());
+        var loadGame = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME, gameData.game().toFen());
         connections.messageRoot(session, loadGame);
         var notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, message);
         connections.broadcast(authToken, roomCode, notification);
@@ -172,7 +172,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
             game.makeMove(move);
             gameAccess.updateGame(gameData);
             message = String.format("%s moved %s to %s", username, move.getStartPosition(), move.getEndPosition());
-            var loadGame = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME, gameData.game());
+            var loadGame = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME, gameData.game().toFen());
             connections.messageRoot(session, loadGame);
             connections.broadcast(moveCommand.getAuthToken(), moveCommand.getRoomCode(), loadGame);
             String checkMessage = checkMessages(game, gameData);
@@ -242,7 +242,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
             }
             gameData.game().gameOver = true;
             gameAccess.updateGame(gameData);
-            var loadGame = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME, gameData.game());
+            var loadGame = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME, gameData.game().toFen());
 //            connections.messageRoot(session, loadGame);
 //            connections.broadcast(authToken, gameID, loadGame);
         } catch (DataAccessException e) {

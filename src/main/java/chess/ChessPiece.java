@@ -24,6 +24,27 @@ public class ChessPiece {
         return "ChessPiece{" + pieceColor + type + '}';
     }
 
+    public String toFen() {
+        return switch (pieceColor) {
+            case WHITE -> switch (type) {
+                case KING -> "K";
+                case QUEEN -> "Q";
+                case BISHOP -> "B";
+                case KNIGHT -> "N";
+                case ROOK -> "R";
+                case PAWN -> "P";
+            };
+            case BLACK -> switch (type) {
+                case KING -> "k";
+                case QUEEN -> "q";
+                case BISHOP -> "b";
+                case KNIGHT -> "n";
+                case ROOK -> "r";
+                case PAWN -> "p";
+            };
+        };
+    }
+
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) {
