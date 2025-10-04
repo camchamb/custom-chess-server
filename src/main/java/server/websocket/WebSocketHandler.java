@@ -52,7 +52,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
                 default -> connections.messageRoot(ctx.session,
                         new ServerMessage(ServerMessage.ServerMessageType.ERROR, "Invalid Command"));
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
