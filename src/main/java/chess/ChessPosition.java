@@ -51,7 +51,7 @@ public class ChessPosition {
         if (pos.length() != 2) {
             throw new RuntimeException("Invalid postion: " + pos);
         }
-        this.row = switch (pos.charAt(0)) {
+        this.col = switch (pos.charAt(0)) {
             case 'a' -> 1;
             case 'b' -> 2;
             case 'c' -> 3;
@@ -62,7 +62,7 @@ public class ChessPosition {
             case 'h' -> 8;
             default -> throw new RuntimeException("Invalid postion: " + pos);
         };
-        this.col = pos.charAt(0);
+        this.row = Character.getNumericValue(pos.charAt(1));
     }
 
 
