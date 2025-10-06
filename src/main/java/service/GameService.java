@@ -64,12 +64,10 @@ public class GameService {
         }
         GameData updatedGameData;
         if (joinGameRequest.playerColor().equals("WHITE") && gameData.whiteUsername() == null) {
-            updatedGameData = new GameData(username,
-                    gameData.blackUsername(), gameData.roomCode(), gameData.game());
+            updatedGameData = new GameData(gameData.roomCode(), username, gameData.blackUsername(), gameData.game());
         }
         else if (joinGameRequest.playerColor().equals("BLACK") && gameData.blackUsername() == null) {
-            updatedGameData = new GameData(gameData.whiteUsername(),
-                    username, gameData.roomCode(), gameData.game());
+            updatedGameData = new GameData(gameData.roomCode(), gameData.whiteUsername(), username, gameData.game());
         }
         else {
             throw new DataAccessException(403, "Error: color taken");
