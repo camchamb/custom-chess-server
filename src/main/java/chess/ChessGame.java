@@ -2,7 +2,9 @@ package chess;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Map;
 import java.util.Objects;
+import java.util.HashMap;
 
 /**
  * For a class that can manage a chess game, making moves on a board
@@ -62,6 +64,42 @@ public class ChessGame {
         WHITE,
         BLACK
     }
+
+
+//    public Map<String, ArrayList<String>> getAllMoves() {
+//        Map<String, ArrayList<String>> whiteMoves = new HashMap<>();
+//        Map<String, ArrayList<String>> blackMoves = new HashMap<>();
+//
+//        for (int row = 1; row < 9; row++) {
+//            for (int col = 1; col < 9; col++) {
+//                var position = new ChessPosition(row, col);
+//
+//            }
+//        }
+//
+//    }
+
+//    public Collection<ChessMove> stringValidMoves(ChessPosition startPosition) {
+//        if (this.board.getPiece(startPosition) == null) {
+//            return null;
+//        }
+//        var piece = this.board.getPiece(startPosition);
+//        var moves = piece.pieceMoves(this.board, startPosition);
+//        ArrayList<ChessMove> newMoves = new ArrayList<>();
+//        for (var move : moves) {
+//            var newBoard = board.clone();
+//            movePieceOnBoard(newBoard, move);
+//            if (!inCheckHelper(newBoard, piece.getTeamColor())) {
+//                newMoves.add(move.);
+//            }
+//        }
+//        castleMove(startPosition, newMoves);
+//        var enPassant = enPassantMove(startPosition);
+//        if (enPassant != null) {
+//            newMoves.add(enPassant);
+//        }
+//        return newMoves;
+//    }
 
     /**
      * Gets a valid moves for a piece at the given location
@@ -472,7 +510,9 @@ public class ChessGame {
 
     public String toFen() {
         StringBuilder finalString = new StringBuilder();
-        for (var array : this.board.getBoard()) {
+        var board = this.board.getBoard();
+        for (int j = 7; j >= 0; j--) {
+            var array = board[j];
             int i = 0;
             for (ChessPiece piece : array) {
                 if (piece == null) {

@@ -47,6 +47,24 @@ public class ChessPosition {
         this.col = col;
     }
 
+    public ChessPosition(String pos) {
+        if (pos.length() != 2) {
+            throw new RuntimeException("Invalid postion: " + pos);
+        }
+        this.row = switch (pos.charAt(0)) {
+            case 'a' -> 1;
+            case 'b' -> 2;
+            case 'c' -> 3;
+            case 'd' -> 4;
+            case 'e' -> 5;
+            case 'f' -> 6;
+            case 'g' -> 7;
+            case 'h' -> 8;
+            default -> throw new RuntimeException("Invalid postion: " + pos);
+        };
+        this.col = pos.charAt(0);
+    }
+
 
     /**
      * @return which row this position is in

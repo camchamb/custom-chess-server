@@ -19,6 +19,60 @@ public class ChessPiece {
         this.type = type;
     }
 
+    public ChessPiece(String piece) {
+        switch (piece) {
+            case "K" -> {
+                this.pieceColor = ChessGame.TeamColor.WHITE;
+                this.type = PieceType.KING;
+            }
+            case "Q" -> {
+                this.pieceColor = ChessGame.TeamColor.WHITE;
+                this.type = PieceType.QUEEN;
+            }
+            case "B" -> {
+                this.pieceColor = ChessGame.TeamColor.WHITE;
+                this.type = PieceType.BISHOP;
+            }
+            case "N" -> {
+                this.pieceColor = ChessGame.TeamColor.WHITE;
+                this.type = PieceType.KNIGHT;
+            }
+            case "R" -> {
+                this.pieceColor = ChessGame.TeamColor.WHITE;
+                this.type = PieceType.ROOK;
+            }
+            case "P" -> {
+                this.pieceColor = ChessGame.TeamColor.WHITE;
+                this.type = PieceType.PAWN;
+            }
+            case "k" -> {
+                this.pieceColor = ChessGame.TeamColor.BLACK;
+                this.type = PieceType.KING;
+            }
+            case "q" -> {
+                this.pieceColor = ChessGame.TeamColor.BLACK;
+                this.type = PieceType.QUEEN;
+            }
+            case "b" -> {
+                this.pieceColor = ChessGame.TeamColor.BLACK;
+                this.type = PieceType.BISHOP;
+            }
+            case "n" -> {
+                this.pieceColor = ChessGame.TeamColor.BLACK;
+                this.type = PieceType.KNIGHT;
+            }
+            case "r" -> {
+                this.pieceColor = ChessGame.TeamColor.BLACK;
+                this.type = PieceType.ROOK;
+            }
+            case "p" -> {
+                this.pieceColor = ChessGame.TeamColor.BLACK;
+                this.type = PieceType.PAWN;
+            }
+            default -> throw new RuntimeException("Invalid piece symbol: " + piece);
+        }
+    }
+
     @Override
     public String toString() {
         return "ChessPiece{" + pieceColor + type + '}';
@@ -44,6 +98,8 @@ public class ChessPiece {
             };
         };
     }
+
+
 
     @Override
     public boolean equals(Object o) {

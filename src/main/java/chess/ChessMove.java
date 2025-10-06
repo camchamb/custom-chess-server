@@ -1,5 +1,7 @@
 package chess;
 
+import dataaccess.DataAccessException;
+
 import java.util.Objects;
 
 /**
@@ -20,6 +22,25 @@ public class ChessMove implements Cloneable {
         this.startPosition = startPosition;
         this.endPosition = endPosition;
         this.promotionPiece = promotionPiece;
+    }
+
+    public ChessMove(String move) {
+        String[] words = move.split(" ");
+        if (words.length == 2) {
+            this.startPosition = new ChessPosition(words[0]);
+            this.endPosition = new ChessPosition(words[1]);
+            this.promotionPiece = null;
+        }
+        else if (words.length >= 3) {
+            this.startPosition = new ChessPosition(words[0]);
+            this.endPosition = new ChessPosition(words[1]);
+            this.promotionPiece = new ChessPiece(words[2]).getPieceType();
+        } else {
+            this.startPosition = null;
+            this.endPosition = null;
+            this.promotionPiece = null;
+            throw new RuntimeException("Not a valid move: " + move);
+        }
     }
 
     /**

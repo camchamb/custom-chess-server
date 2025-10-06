@@ -53,7 +53,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
                         new ServerMessage(ServerMessage.ServerMessageType.ERROR, "Invalid Command"));
             }
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            System.out.println("WS failed on: " + ctx.message());
         }
     }
 
