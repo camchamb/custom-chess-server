@@ -63,10 +63,10 @@ public class GameService {
             throw new DataAccessException(400, "Error: no such gameID");
         }
         GameData updatedGameData;
-        if (joinGameRequest.playerColor().equals("WHITE") && gameData.whiteUsername() == null) {
+        if (joinGameRequest.playerColor().equals("WHITE") && (gameData.whiteUsername() == null || gameData.whiteUsername().equals(username))) {
             updatedGameData = new GameData(gameData.roomCode(), username, gameData.blackUsername(), gameData.game());
         }
-        else if (joinGameRequest.playerColor().equals("BLACK") && gameData.blackUsername() == null) {
+        else if (joinGameRequest.playerColor().equals("BLACK") && (gameData.blackUsername() == null || gameData.blackUsername().equals(username))) {
             updatedGameData = new GameData(gameData.roomCode(), gameData.whiteUsername(), username, gameData.game());
         }
         else {
