@@ -18,7 +18,7 @@ public class UserGameCommand {
 
     private final String roomCode;
 
-    private ChessMove move = null;
+    private String move = null;
 
     public UserGameCommand(CommandType commandType, String authToken, String roomCode) {
         this.commandType = commandType;
@@ -26,18 +26,18 @@ public class UserGameCommand {
         this.roomCode = roomCode;
     }
 
-    public UserGameCommand(CommandType commandType, String authToken, String roomCode, ChessMove move) {
-        this.commandType = commandType;
-        this.authToken = authToken;
-        this.roomCode = roomCode;
-        this.move = move;
-    }
+//    public UserGameCommand(CommandType commandType, String authToken, String roomCode, ChessMove move) {
+//        this.commandType = commandType;
+//        this.authToken = authToken;
+//        this.roomCode = roomCode;
+//        this.move = move;
+//    }
 
     public UserGameCommand(CommandType commandType, String authToken, String roomCode, String move) {
         this.commandType = commandType;
         this.authToken = authToken;
         this.roomCode = roomCode;
-        this.move = new ChessMove(move);
+        this.move = move;
     }
 
     public enum CommandType {
@@ -60,7 +60,7 @@ public class UserGameCommand {
     }
 
     public ChessMove getMove() {
-        return move;
+        return new ChessMove(move);
     }
 
     @Override
