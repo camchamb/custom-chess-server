@@ -40,7 +40,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     }
 
     @Override
-    public void handleMessage(WsMessageContext ctx) throws DataAccessException {
+    public void handleMessage(WsMessageContext ctx) {
         try {
             UserGameCommand action = new Gson().fromJson(ctx.message(), UserGameCommand.class);
             System.out.println("WS recieved: " + ctx.message());
@@ -53,7 +53,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
                         new ServerMessage(ServerMessage.ServerMessageType.ERROR, "Invalid Command"));
             }
         } catch (Exception e) {
-            System.out.println("WS failed on: " + ctx.message());
+            System.out.println("WS failed on: " + ctx.message() + ". Message: " + e);
         }
     }
 
