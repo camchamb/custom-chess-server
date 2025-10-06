@@ -50,6 +50,7 @@ public class Server {
                 .post("/session", this::login)
                 .delete("/session", this::logout)
                 .get("/game", this::listGames)
+                .get("/awake", this::awake)
                 .post("/game", this::createGame)
                 .put("/game", this::joinGame)
                 .exception(Exception.class, this::exceptionHandler)
@@ -89,6 +90,10 @@ public class Server {
         catch (DataAccessException ex) {
             errorHandling(ex, context);
         }
+    }
+
+    private void awake(Context context) {
+        context.json("{ }");
     }
 
     private void db(Context context) {
