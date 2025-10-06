@@ -184,10 +184,11 @@ public class Server {
 
     private void joinGame(Context context) {
         try {
-            System.out.println(context.body());
+
             var tempRequest = serializer.fromJson(context.body(), JoinGameRequest.class);
             var joinGameRequest = new JoinGameRequest(tempRequest.playerColor(),
-                    tempRequest.roomCode(), context.cookie("authToken"));
+                    tempRequest.roomCode(), context.header("authToken"));
+            System.out.println(joinGameRequest);
             gameService.joinGame(joinGameRequest);
             context.json("{ }");
         }
