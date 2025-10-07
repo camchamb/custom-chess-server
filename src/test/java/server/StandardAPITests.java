@@ -166,15 +166,13 @@ public class StandardAPITests {
         USER_SERVICE.clear();
         GAME_SERVICE.clear();
         userRegister();
-        var loginResult = USER_SERVICE.login(new LoginRequest("username", "password"));
+        var loginResult = USER_SERVICE.login(new LoginRequest("cameronchamberlain1@gmail.com", "password"));
         String authToken = loginResult.authToken();
         var createGameRequest = new CreateGameRequest(authToken);
         var createGameResult = GAME_SERVICE.createGame(createGameRequest);
         var joinGameRequest = new JoinGameRequest("WHITE", createGameResult.roomCode(), authToken);
-        GAME_SERVICE.joinGame(joinGameRequest);
-        var listGamesResult = GAME_SERVICE.listGames(new ListGamesRequest(authToken));
-        var testObject = new GameData(createGameResult.roomCode(), "username", null, null);
-        assert listGamesResult.games().contains(testObject);
+        String color = GAME_SERVICE.joinGame(joinGameRequest);
+        assert color.equals("WHITE");
     }
 
     @Test

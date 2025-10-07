@@ -76,15 +76,7 @@ public class Server {
             var regReq = serializer.fromJson(context.body(), RegisterRequest.class);
             System.out.println("Request: " + context.body());
             RegisterResult regRes = userService.register(regReq);
-
-            Cookie myCookie = new Cookie("authToken", regRes.authToken());
-            myCookie.setMaxAge(3600);       // 1 hour
-            myCookie.setPath("/");
-            myCookie.setHttpOnly(true);
-            myCookie.setSecure(true);       // HTTPS only
-            context.cookie("authToken", regRes.authToken(), 3600);
-            var username = new LoginResult(regRes.username(), null);
-            context.json(serializer.toJson(username));
+            context.json(serializer.toJson(regRes));
             System.out.println(serializer.toJson(regRes));
         }
         catch (DataAccessException ex) {
