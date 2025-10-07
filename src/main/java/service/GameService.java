@@ -1,5 +1,7 @@
 package service;
 
+import chess.ChessGame;
+import chess.ChessPiece;
 import dataaccess.*;
 import data.GameData;
 import requests.*;
@@ -43,7 +45,7 @@ public class GameService {
         return new CreateGameResult(roomCode);
     }
 
-    public void joinGame(JoinGameRequest joinGameRequest) throws DataAccessException{
+    public String joinGame(JoinGameRequest joinGameRequest) throws DataAccessException{
         if (joinGameRequest.playerColor() == null) {
             throw new DataAccessException(400, "Error: invalid request");
         }
@@ -65,13 +67,16 @@ public class GameService {
         GameData updatedGameData;
         if (joinGameRequest.playerColor().equals("WHITE") && (gameData.whiteUsername() == null || gameData.whiteUsername().equals(username))) {
             updatedGameData = new GameData(gameData.roomCode(), username, gameData.blackUsername(), gameData.game());
+            gameAccess.updateGame(updatedGameData);
+            return "WHITE";
         }
         else if (joinGameRequest.playerColor().equals("BLACK") && (gameData.blackUsername() == null || gameData.blackUsername().equals(username))) {
             updatedGameData = new GameData(gameData.roomCode(), gameData.whiteUsername(), username, gameData.game());
+            gameAccess.updateGame(updatedGameData);
+            return "BLACK";
         }
         else {
             throw new DataAccessException(403, "Error: color taken");
         }
-        gameAccess.updateGame(updatedGameData);
     }
 }

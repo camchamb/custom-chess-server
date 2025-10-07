@@ -188,9 +188,9 @@ public class Server {
             var joinGameRequest = new JoinGameRequest(tempRequest.playerColor(),
                     tempRequest.roomCode(), context.header("authToken"));
             System.out.println(joinGameRequest);
-            gameService.joinGame(joinGameRequest);
-            context.json("{ }");
-            System.out.println("Joined Game");
+            String color = gameService.joinGame(joinGameRequest);
+            context.json(Map.of("color", color));
+            System.out.println("Joined Game as: " + color);
         }
         catch (DataAccessException ex) {
             errorHandling(ex, context);
