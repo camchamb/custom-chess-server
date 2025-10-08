@@ -97,18 +97,14 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
                 usernames.add(gameData.blackUsername());
                 int i = random.nextInt(2);
                 if (usernames.get(i) == null) {
-                    updateGames(i, gameData, authData);
-                    var loadGame = new ServerMessage(ServerMessage.ServerMessageType.COLOR, "WHITE");
-                    connections.messageRoot(session, loadGame);
+                    message = updateGames(i, gameData, authData, session);
                 } else if ((usernames.get(1 - i) == null)) {
-                    updateGames(1 - i, gameData, authData);
-                    var loadGame = new ServerMessage(ServerMessage.ServerMessageType.COLOR, "BLACK");
-                    connections.messageRoot(session, loadGame);
+                    message = updateGames(1 - i, gameData, authData, session);
                 } else {
                     var loadGame = new ServerMessage(ServerMessage.ServerMessageType.COLOR, "OBSERVER");
                     connections.messageRoot(session, loadGame);
+                    message = String.format("%s connected as an observer", authData.username());
                 }
-                message = String.format("%s connected as an observer", authData.username());
             }
         } catch (DataAccessException e) {
             var error = new ServerMessage(ServerMessage.ServerMessageType.ERROR, "Bad Request");
@@ -121,15 +117,22 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         connections.broadcast(authToken, roomCode, notification);
     }
 
-    private void updateGames(int i, GameData gameData, AuthData authData) throws DataAccessException {
+    private String updateGames(int i, GameData gameData, AuthData authData, Session session) throws DataAccessException, IOException {
         if (i == 0) {
             var updatedGameData = new GameData(gameData.roomCode(), authData.username(), gameData.blackUsername(), gameData.game());
             gameAccess.updateGame(updatedGameData);
+            var color = new ServerMessage(ServerMessage.ServerMessageType.COLOR, "WHITE");
+            connections.messageRoot(session, color);
+            return String.format("%s connected as White Player", authData.username());
         }
         if (i == 1) {
             var updatedGameData = new GameData(gameData.roomCode(), gameData.whiteUsername(), authData.username(), gameData.game());
             gameAccess.updateGame(updatedGameData);
+            var color = new ServerMessage(ServerMessage.ServerMessageType.COLOR, "BLACK");
+            connections.messageRoot(session, color);
+            return String.format("%s connected as White Player", authData.username());
         }
+        return "";
     }
 
     private void leave(String authToken, String roomCode, Session session) throws IOException {
