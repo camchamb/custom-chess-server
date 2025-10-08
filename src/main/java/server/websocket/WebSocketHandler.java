@@ -46,6 +46,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
             System.out.println("WS recieved: " + ctx.message());
             switch (action.getCommandType()) {
                 case CONNECT -> connect(action.getAuthToken(), action.getRoomCode(), ctx.session);
+                case RELOAD -> connect(action.getAuthToken(), action.getRoomCode(), ctx.session);
                 case MAKE_MOVE -> makeMove(new Gson().fromJson(ctx.message(), UserGameCommand.class), ctx.session);
                 case LEAVE -> leave(action.getAuthToken(), action.getRoomCode(), ctx.session);
                 case RESIGN -> resign(action.getAuthToken(), action.getRoomCode(), ctx.session);
@@ -192,6 +193,31 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         }
         var notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, message);
         connections.broadcast(moveCommand.getAuthToken(), moveCommand.getRoomCode(), notification);
+    }
+
+    public void reload(String authToken, String roomCode, Session session) throws IOException {
+        String message;
+        GameData gameData;
+        try {
+            var authData = authAccess.getAuth(authToken);
+            if (authData == null) {
+                var error = new ServerMessage(ServerMessage.ServerMessageType.ERROR, "Bad Request");
+                connections.messageRoot(session, error);
+                return;
+            }
+            gameData = gameAccess.getGame(roomCode);
+            if (gameData == null) {
+                var error = new ServerMessage(ServerMessage.ServerMessageType.ERROR, "No Such Game");
+                connections.messageRoot(session, error);
+                return;
+            }
+        } catch (DataAccessException e) {
+            var error = new ServerMessage(ServerMessage.ServerMessageType.ERROR, "Bad Request");
+            connections.messageRoot(session, error);
+            return;
+        }
+        var loadGame = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME, gameData.game().toFen());
+        connections.messageRoot(session, loadGame);
     }
 
     private String checkMessages(ChessGame game, GameData gameData) {
