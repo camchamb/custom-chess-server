@@ -18,6 +18,8 @@ import websocket.commands.UserGameCommand;
 import websocket.messages.ServerMessage;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Random;
 
 public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsCloseHandler {
 
@@ -25,6 +27,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     private final UserDAO userAccess;
     private final GameDAO gameAccess;
     private final AuthDAO authAccess;
+    private final Random random = new Random();
 
 
     public WebSocketHandler(UserDAO userAccess, GameDAO gameAccess, AuthDAO authAccess) {
@@ -81,10 +84,30 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
             }
             connections.add(authToken, roomCode, session);
             if (authData.username().equals(gameData.whiteUsername())) {
+                var loadGame = new ServerMessage(ServerMessage.ServerMessageType.COLOR, "WHITE");
+                connections.messageRoot(session, loadGame);
                 message = String.format("%s connected as White Player", authData.username());
             } else if (authData.username().equals(gameData.blackUsername())) {
+                var loadGame = new ServerMessage(ServerMessage.ServerMessageType.COLOR, "BLACK");
+                connections.messageRoot(session, loadGame);
                 message = String.format("%s connected as Black Player", authData.username());
             } else {
+                var usernames = new ArrayList<String>();
+                usernames.add(gameData.whiteUsername());
+                usernames.add(gameData.blackUsername());
+                int i = random.nextInt(2);
+                if (usernames.get(i) == null) {
+                    updateGames(i, gameData, authData);
+                    var loadGame = new ServerMessage(ServerMessage.ServerMessageType.COLOR, "WHITE");
+                    connections.messageRoot(session, loadGame);
+                } else if ((usernames.get(1 - i) == null)) {
+                    updateGames(1 - i, gameData, authData);
+                    var loadGame = new ServerMessage(ServerMessage.ServerMessageType.COLOR, "BLACK");
+                    connections.messageRoot(session, loadGame);
+                } else {
+                    var loadGame = new ServerMessage(ServerMessage.ServerMessageType.COLOR, "OBSERVER");
+                    connections.messageRoot(session, loadGame);
+                }
                 message = String.format("%s connected as an observer", authData.username());
             }
         } catch (DataAccessException e) {
@@ -96,6 +119,17 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         connections.messageRoot(session, loadGame);
         var notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, message);
         connections.broadcast(authToken, roomCode, notification);
+    }
+
+    private void updateGames(int i, GameData gameData, AuthData authData) throws DataAccessException {
+        if (i == 0) {
+            var updatedGameData = new GameData(gameData.roomCode(), authData.username(), gameData.blackUsername(), gameData.game());
+            gameAccess.updateGame(updatedGameData);
+        }
+        if (i == 1) {
+            var updatedGameData = new GameData(gameData.roomCode(), gameData.whiteUsername(), authData.username(), gameData.game());
+            gameAccess.updateGame(updatedGameData);
+        }
     }
 
     private void leave(String authToken, String roomCode, Session session) throws IOException {
